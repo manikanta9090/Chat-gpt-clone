@@ -1,39 +1,80 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const ChatContext = createContext(null);
 
 export function ChatProvider({ children }) {
-  const [chats, setChats] = useState([
-    { id: 1, title: 'Chat 1', messages: [] }
-  ]);
-  const [currentChatId, setCurrentChatId] = useState(1);
+  const [chats, setChats] = useState([]);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const createNewChat = useCallback(() => {
-    const newChat = {
-      id: Date.now(),
-      title: `Chat ${chats.length + 1}`,
-      messages: [],
-    };
-    setChats(prev => [newChat, ...prev]);
-    setCurrentChatId(newChat.id);
+  // Fetch all chats on mount
+  useEffect(() => {
+    fetchChats();
+  }, []);
+
+  const fetchChats = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/chats');
+      if (response.ok) {
+        const data = await response.json();
+        setChats(data);
+        if (data.length > 0) {
+          setCurrentChatId(data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching chats:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createNewChat = useCallback(async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/chats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: `Chat ${chats.length + 1}` }),
+      });
+
+      if (response.ok) {
+        const newChat = await response.json();
+        setChats(prev => [newChat, ...prev]);
+        setCurrentChatId(newChat.id);
+      }
+    } catch (error) {
+      console.error('Error creating chat:', error);
+    }
   }, [chats.length]);
 
   const selectChat = useCallback((chatId) => {
     setCurrentChatId(chatId);
   }, []);
 
-  const deleteChat = useCallback((chatId) => {
-    setChats(prev => {
-      const filtered = prev.filter(c => c.id !== chatId);
-      // If we deleted the current chat, switch to another one
-      if (chatId === currentChatId && filtered.length > 0) {
-        setCurrentChatId(filtered[0].id);
+  const deleteChat = useCallback(async (chatId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/chats/${chatId}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        setChats(prev => {
+          const filtered = prev.filter(c => c.id !== chatId);
+          if (filtered.length > 0 && currentChatId === chatId) {
+            setCurrentChatId(filtered[0].id);
+          } else if (filtered.length === 0) {
+            setCurrentChatId(null);
+          }
+          return filtered;
+        });
       }
-      return filtered;
-    });
+    } catch (error) {
+      console.error('Error deleting chat:', error);
+    }
   }, [currentChatId]);
 
   const getCurrentMessages = useCallback(() => {
+    if (!currentChatId) return [];
     const currentChat = chats.find(chat => chat.id === currentChatId);
     return currentChat ? currentChat.messages : [];
   }, [chats, currentChatId]);
@@ -43,15 +84,11 @@ export function ChatProvider({ children }) {
 
     const userMessage = { role: 'user', text: inputText.trim() };
 
-    // Add user message
+    // Optimistically add user message
     setChats(prevChats =>
       prevChats.map(chat =>
         chat.id === currentChatId
-          ? {
-              ...chat,
-              messages: [...chat.messages, userMessage],
-              title: chat.messages.length === 0 ? inputText.slice(0, 30) : chat.title
-            }
+          ? { ...chat, messages: [...chat.messages, userMessage] }
           : chat
       )
     );
@@ -67,6 +104,42 @@ export function ChatProvider({ children }) {
 
       const data = await response.json();
       const aiMessage = { role: 'ai', text: data.reply };
+
+      // Save user message to DB
+      try {
+        await fetch(`http://localhost:5000/api/chats/${currentChatId}/message`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userMessage }),
+        });
+      } catch (err) {
+        console.warn('Could not save user message to DB:', err);
+      }
+
+      // Save AI message to DB
+      try {
+        await fetch(`http://localhost:5000/api/chats/${currentChatId}/message`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: aiMessage }),
+        });
+      } catch (err) {
+        console.warn('Could not save AI message to DB:', err);
+      }
+
+      // Update title if this is the first message
+      const currentChat = chats.find(chat => chat.id === currentChatId);
+      if (currentChat && currentChat.messages.length === 0) {
+        try {
+          await fetch(`http://localhost:5000/api/chats/${currentChatId}/title`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: inputText.slice(0, 30) }),
+          });
+        } catch (err) {
+          console.warn('Could not update chat title:', err);
+        }
+      }
 
       setChats(prevChats =>
         prevChats.map(chat =>
@@ -87,11 +160,12 @@ export function ChatProvider({ children }) {
       );
       throw err;
     }
-  }, [currentChatId]);
+  }, [chats, currentChatId]);
 
   const value = {
     chats,
     currentChatId,
+    loading,
     createNewChat,
     selectChat,
     deleteChat,
