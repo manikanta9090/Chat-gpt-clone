@@ -1,7 +1,7 @@
 import React from "react";
 import { MessageSquare, Trash2 } from "lucide-react";
 
-function HistoryList({ chats, onSelectChat, onDeleteChat }) {
+function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat }) {
   const handleKeyDown = (e, chatId) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -17,7 +17,7 @@ function HistoryList({ chats, onSelectChat, onDeleteChat }) {
         {chats.map((chat) => (
           <div
             key={chat.id}
-            className={`history-item ${chat.active ? "active" : ""}`}
+            className={`history-item ${chat.id === currentChatId ? "active" : ""}`}
             role="button"
             tabIndex={0}
             onClick={() => onSelectChat(chat.id)}

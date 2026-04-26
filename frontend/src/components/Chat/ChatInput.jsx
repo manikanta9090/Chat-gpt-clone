@@ -1,255 +1,228 @@
-import { useState, useRef, useEffect } from 'react';
-import { Plus, Mic, Send, Paperclip } from 'lucide-react';
+import { useState, useRef, useEffect } from "react";
+import { Plus, Mic, Send, Paperclip } from "lucide-react";
 
-const ChatInput = ({ messages, onSendMessage, onNewChat }) => {
-  const [inputText, setInputText] = useState('');
+const ChatInput = ({ onSendMessage, onNewChat }) => {
+  const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isListening, setIsListening] = useState(false);
+
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
-  const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef(null);
 
+  // 🎤 Voice Setup
   useEffect(() => {
-    if (typeof window !== 'undefined' && ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
 
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setInputText(prev => prev + transcript);
-        setIsListening(false);
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
+    if (!SpeechRecognition) {
+      console.log("Speech recognition not supported");
+      return;
     }
 
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => {
+      console.log("Voice started");
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      console.log("Voice:", transcript);
+
+      // ✅ Fill input with voice text
+      setInputText(transcript);
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Voice error:", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      console.log("Voice ended");
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+
     return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
-      }
+      recognition.abort();
     };
   }, []);
 
+  // 📏 Auto resize textarea
   useEffect(() => {
     const textarea = textareaRef.current;
     if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = textarea.scrollHeight + 'px';
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
     }
   }, [inputText]);
 
+  // 📤 Send Message
   const handleSend = async () => {
     if (!inputText.trim() || isLoading) return;
 
     const message = inputText.trim();
-    setInputText('');
+    setInputText("");
     setIsLoading(true);
     setError(null);
 
     try {
       await onSendMessage(message);
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error("Error:", err);
       setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ⌨️ Enter key send
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
   };
 
+  // 🎤 Toggle Voice
   const toggleVoiceInput = () => {
     if (!recognitionRef.current) {
-      alert('Voice recognition is not supported in this browser. Try Chrome or Edge.');
+      alert("Voice not supported. Use Chrome.");
       return;
     }
 
-    if (isListening) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      recognitionRef.current.start();
-      setIsListening(true);
+    try {
+      if (isListening) {
+        recognitionRef.current.stop();
+      } else {
+        recognitionRef.current.start();
+      }
+    } catch (err) {
+      console.error("Mic error:", err);
     }
+  };
+
+  // 📎 File Upload
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      console.log('Selected file:', file);
-      setInputText(prev => prev + ` [File: ${file.name}]`);
+      console.log("Selected file:", file);
+      setInputText(`[File: ${file.name}]`);
     }
   };
 
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
+  // 🎨 Styles
   const containerStyle = {
-    position: 'fixed',
+    position: "fixed",
     bottom: 0,
-    left: '260px',
+    left: "260px",
     right: 0,
-    padding: '16px 24px',
-    backgroundColor: '#202123',
-    borderTop: '1px solid #2f2f2f',
-    display: 'flex',
-    justifyContent: 'center',
-    zIndex: 1000,
+    padding: "16px",
+    backgroundColor: "#202123",
+    borderTop: "1px solid #2f2f2f",
+    display: "flex",
+    justifyContent: "center",
   };
 
   const inputWrapperStyle = {
-    maxWidth: '768px',
-    width: '100%',
-    display: 'flex',
-    alignItems: 'flex-end',
-    gap: '8px',
-    backgroundColor: '#40414f',
-    borderRadius: '12px',
-    padding: '12px 16px',
-    border: '1px solid #565869',
-    boxSizing: 'border-box',
+    maxWidth: "768px",
+    width: "100%",
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
+    backgroundColor: "#40414f",
+    borderRadius: "12px",
+    padding: "10px",
   };
 
   const iconButtonStyle = {
-    background: 'transparent',
-    border: 'none',
-    color: '#ababad',
-    cursor: 'pointer',
-    padding: '8px',
-    borderRadius: '4px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'all 0.15s ease',
-    flexShrink: 0,
+    background: "transparent",
+    border: "none",
+    color: "#ababad",
+    cursor: "pointer",
+    padding: "6px",
   };
 
   const textareaStyle = {
     flex: 1,
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: '#ececf1',
-    fontSize: '16px',
-    lineHeight: '1.4',
-    resize: 'none',
-    outline: 'none',
-    fontFamily: 'inherit',
-    maxHeight: '200px',
-    minHeight: '24px',
-    padding: '0',
-    overflowY: 'auto',
+    background: "transparent",
+    border: "none",
+    color: "white",
+    outline: "none",
+    resize: "none",
   };
 
   const sendButtonStyle = {
-    backgroundColor: isLoading ? '#565869' : '#10a37f',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    padding: '8px',
-    cursor: isLoading ? 'not-allowed' : 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background-color 0.2s ease',
-    flexShrink: 0,
-    minWidth: '40px',
-  };
-
-  const loadingTextStyle = {
-    color: '#ababad',
-    fontSize: '13px',
-    marginTop: '8px',
-    textAlign: 'center',
-  };
-
-  const errorTextStyle = {
-    color: '#ef4444',
-    fontSize: '13px',
-    marginTop: '8px',
-    textAlign: 'center',
+    backgroundColor: isLoading ? "#565869" : "#10a37f",
+    border: "none",
+    padding: "8px",
+    borderRadius: "6px",
+    cursor: "pointer",
   };
 
   return (
     <div style={containerStyle}>
       <div style={inputWrapperStyle}>
+        {/* Hidden File Input */}
         <input
           type="file"
           ref={fileInputRef}
           onChange={handleFileSelect}
-          style={{ display: 'none' }}
-          aria-label="Upload file"
+          style={{ display: "none" }}
         />
 
-        <button onClick={onNewChat} style={iconButtonStyle} title="New chat">
+        {/* ➕ New Chat */}
+        <button onClick={onNewChat} style={iconButtonStyle}>
           <Plus size={20} />
         </button>
 
-        <button
-          onClick={triggerFileInput}
-          style={iconButtonStyle}
-          title="Upload file"
-          disabled={isLoading}
-        >
+        {/* 📎 Upload */}
+        <button onClick={triggerFileInput} style={iconButtonStyle}>
           <Paperclip size={20} />
         </button>
 
+        {/* 📝 Input */}
         <textarea
           ref={textareaRef}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           placeholder="Send a message..."
           style={textareaStyle}
-          disabled={isLoading}
-          rows="1"
+          rows={1}
         />
 
+        {/* 🎤 Voice */}
         <button
           onClick={toggleVoiceInput}
           style={{
             ...iconButtonStyle,
-            color: isListening ? '#ef4444' : '#ababad',
+            color: isListening ? "red" : "#ababad",
           }}
-          title="Voice input"
-          disabled={isLoading}
         >
           <Mic size={20} />
         </button>
 
-        <button
-          onClick={handleSend}
-          disabled={isLoading || !inputText.trim()}
-          style={sendButtonStyle}
-          title="Send message"
-        >
-          {isLoading ? (
-            <span style={{ fontSize: '18px', lineHeight: 1 }}>...</span>
-          ) : (
-            <Send size={18} />
-          )}
+        {/* ➤ Send */}
+        <button onClick={handleSend} style={sendButtonStyle}>
+          {isLoading ? "..." : <Send size={18} />}
         </button>
       </div>
-      {isLoading && <div style={loadingTextStyle}>AI is typing...</div>}
-      {error && <div style={errorTextStyle}>Error: {error}</div>}
+
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 };
