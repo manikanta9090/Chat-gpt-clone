@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const ChatContext = createContext(null);
 
@@ -6,20 +7,24 @@ export function ChatProvider({ children }) {
   const [chats, setChats] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isShared, setIsShared] = useState(false);
+  const [sharedChat, setSharedChat] = useState(null);
 
-  // Fetch all chats on mount
-  useEffect(() => {
-    fetchChats();
-  }, []);
+  const location = useLocation();
 
-  const fetchChats = async () => {
+  const fetchChats = useCallback(async () => {
     try {
+      setLoading(true);
+      setIsShared(false);
+      setSharedChat(null);
       const response = await fetch('http://localhost:5000/api/chats');
       if (response.ok) {
         const data = await response.json();
         setChats(data);
         if (data.length > 0) {
           setCurrentChatId(data[0].id);
+        } else {
+          setCurrentChatId(null);
         }
       }
     } catch (error) {
@@ -27,9 +32,41 @@ export function ChatProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  const fetchSharedChat = useCallback(async (id) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`http://localhost:5000/api/share/${id}`);
+      if (response.ok) {
+        const data = await response.json();
+        const chatWithId = { ...data, id: data._id };
+        setSharedChat(data);
+        setChats([chatWithId]);
+        setCurrentChatId(chatWithId.id);
+        setIsShared(true);
+      }
+    } catch (error) {
+      console.error('Error fetching shared chat:', error);
+      setIsShared(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Route-based data fetching
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.startsWith('/chat/')) {
+      const shareId = path.split('/chat/')[1];
+      fetchSharedChat(shareId);
+    } else {
+      fetchChats();
+    }
+  }, [location.pathname, fetchChats, fetchSharedChat]);
 
   const createNewChat = useCallback(async () => {
+    if (isShared) return;
     try {
       const response = await fetch('http://localhost:5000/api/chats', {
         method: 'POST',
@@ -45,13 +82,15 @@ export function ChatProvider({ children }) {
     } catch (error) {
       console.error('Error creating chat:', error);
     }
-  }, [chats.length]);
+  }, [chats.length, isShared]);
 
   const selectChat = useCallback((chatId) => {
+    if (isShared) return;
     setCurrentChatId(chatId);
-  }, []);
+  }, [isShared]);
 
   const deleteChat = useCallback(async (chatId) => {
+    if (isShared) return;
     try {
       const response = await fetch(`http://localhost:5000/api/chats/${chatId}`, {
         method: 'DELETE',
@@ -71,15 +110,19 @@ export function ChatProvider({ children }) {
     } catch (error) {
       console.error('Error deleting chat:', error);
     }
-  }, [currentChatId]);
+  }, [currentChatId, isShared]);
 
   const getCurrentMessages = useCallback(() => {
+    if (isShared && sharedChat) {
+      return sharedChat.messages || [];
+    }
     if (!currentChatId) return [];
     const currentChat = chats.find(chat => chat.id === currentChatId);
     return currentChat ? currentChat.messages : [];
-  }, [chats, currentChatId]);
+  }, [chats, currentChatId, isShared, sharedChat]);
 
   const sendMessage = useCallback(async (inputText) => {
+    if (isShared) return;
     if (!inputText.trim() || !currentChatId) return;
 
     const userMessage = { role: 'user', text: inputText.trim() };
@@ -160,12 +203,14 @@ export function ChatProvider({ children }) {
       );
       throw err;
     }
-  }, [chats, currentChatId]);
+  }, [chats, currentChatId, isShared]);
 
   const value = {
     chats,
     currentChatId,
     loading,
+    isShared,
+    sharedChat,
     createNewChat,
     selectChat,
     deleteChat,

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Plus, Mic, Send, Paperclip } from "lucide-react";
 
-const ChatInput = ({ onSendMessage, onNewChat }) => {
+const ChatInput = ({ onSendMessage, onNewChat, disabled = false }) => {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -68,7 +68,7 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
 
   // 📤 Send Message
   const handleSend = async () => {
-    if (!inputText.trim() || isLoading) return;
+    if (!inputText.trim() || isLoading || disabled) return;
 
     const message = inputText.trim();
     setInputText("");
@@ -87,6 +87,7 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
 
   // ⌨️ Enter key send
   const handleKeyPress = (e) => {
+    if (disabled) return;
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -95,8 +96,7 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
 
   // 🎤 Toggle Voice
   const toggleVoiceInput = () => {
-    if (!recognitionRef.current) {
-      alert("Voice not supported. Use Chrome.");
+    if (disabled || !recognitionRef.current) {
       return;
     }
 
@@ -113,6 +113,7 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
 
   // 📎 File Upload
   const triggerFileInput = () => {
+    if (disabled) return;
     fileInputRef.current?.click();
   };
 
@@ -135,6 +136,8 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
     borderTop: "1px solid #2f2f2f",
     display: "flex",
     justifyContent: "center",
+    opacity: disabled ? 0.5 : 1,
+    pointerEvents: disabled ? "none" : "auto",
   };
 
   const inputWrapperStyle = {
@@ -185,12 +188,12 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
         />
 
         {/* ➕ New Chat */}
-        <button onClick={onNewChat} style={iconButtonStyle}>
+        <button onClick={onNewChat} style={iconButtonStyle} disabled={disabled}>
           <Plus size={20} />
         </button>
 
         {/* 📎 Upload */}
-        <button onClick={triggerFileInput} style={iconButtonStyle}>
+        <button onClick={triggerFileInput} style={iconButtonStyle} disabled={disabled}>
           <Paperclip size={20} />
         </button>
 
@@ -200,9 +203,10 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="Send a message..."
+          placeholder={disabled ? "Read-only mode" : "Send a message..."}
           style={textareaStyle}
           rows={1}
+          disabled={disabled}
         />
 
         {/* 🎤 Voice */}
@@ -212,12 +216,17 @@ const ChatInput = ({ onSendMessage, onNewChat }) => {
             ...iconButtonStyle,
             color: isListening ? "red" : "#ababad",
           }}
+          disabled={disabled}
         >
           <Mic size={20} />
         </button>
 
         {/* ➤ Send */}
-        <button onClick={handleSend} style={sendButtonStyle}>
+        <button 
+          onClick={handleSend} 
+          style={sendButtonStyle}
+          disabled={disabled || isLoading}
+        >
           {isLoading ? "..." : <Send size={18} />}
         </button>
       </div>

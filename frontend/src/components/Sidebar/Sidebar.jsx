@@ -7,24 +7,39 @@ import { useChat } from "../../context/ChatContext";
 import "./Sidebar.css";
 
 function Sidebar() {
-  const { chats, currentChatId, createNewChat, selectChat, deleteChat } = useChat();
+  const { chats, currentChatId, createNewChat, selectChat, deleteChat, isShared } = useChat();
 
   const handleNewChat = useCallback(() => {
-    createNewChat();
-  }, [createNewChat]);
+    if (!isShared) {
+      createNewChat();
+    }
+  }, [createNewChat, isShared]);
 
   const handleSelectChat = useCallback((chatId) => {
-    selectChat(chatId);
-  }, [selectChat]);
+    if (!isShared) {
+      selectChat(chatId);
+    }
+  }, [selectChat, isShared]);
 
   const handleDeleteChat = useCallback((chatId) => {
-    deleteChat(chatId);
-  }, [deleteChat]);
+    if (!isShared) {
+      deleteChat(chatId);
+    }
+  }, [deleteChat, isShared]);
 
   return (
     <div className="sidebar">
       <div className="sidebar-top">
-        <button className="new-chat-btn" onClick={handleNewChat}>
+        <button 
+          className="new-chat-btn" 
+          onClick={handleNewChat}
+          disabled={isShared}
+          style={{
+            opacity: isShared ? 0.5 : 1,
+            cursor: isShared ? 'not-allowed' : 'pointer',
+            pointerEvents: isShared ? 'none' : 'auto'
+          }}
+        >
           <Plus size={18} />
           <span>New chat</span>
         </button>
@@ -37,6 +52,7 @@ function Sidebar() {
           currentChatId={currentChatId}
           onSelectChat={handleSelectChat}
           onDeleteChat={handleDeleteChat}
+          isShared={isShared}
         />
       </div>
 

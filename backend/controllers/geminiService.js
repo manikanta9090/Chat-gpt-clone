@@ -1,27 +1,32 @@
 const { GoogleGenAI } = require("@google/genai");
 
 const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY
+  apiKey: process.env.GEMINI_API_KEY,
 });
 
 /**
  * Send a message to Gemini and get a response
  * @param {string} message - The user's message
- * @param {Array} messagesHistory - Optional array of previous messages in app format
+ * @param {Array} messagesHistory - Optional array of previous messages
  * @returns {Promise<string>} - The AI's response text
  */
 exports.sendMessage = async (message, messagesHistory = []) => {
   try {
-    // Convert history to Gemini format
-    const contents = messagesHistory.map(msg => ({
-      role: msg.role === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    }));
+    // Build contents array with conversation history
+    const contents = [];
 
-    // Add current user message
+    // Add history
+    for (const msg of messagesHistory) {
+      contents.push({
+        role: msg.role === "user" ? "user" : "model",
+        parts: [{ text: msg.text }],
+      });
+    }
+
+    // Add current message
     contents.push({
-      role: 'user',
-      parts: [{ text: message }]
+      role: "user",
+      parts: [{ text: message }],
     });
 
     const response = await ai.models.generateContent({
@@ -30,10 +35,15 @@ exports.sendMessage = async (message, messagesHistory = []) => {
       config: {
         maxOutputTokens: 1000,
         temperature: 0.7,
-      }
+      },
     });
 
-    return response.text();
+    // Extract text safely with optional chaining
+    const reply =
+      response.candidates?.[0]?.content?.parts?.[0]?.text ||
+      "⚠️ No response from AI";
+
+    return reply;
   } catch (error) {
     console.error("Gemini API error:", error.message);
     throw error;

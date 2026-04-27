@@ -1,7 +1,7 @@
 import React from "react";
 import { MessageSquare, Trash2 } from "lucide-react";
 
-function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat }) {
+function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat, isShared }) {
   const handleKeyDown = (e, chatId) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -27,16 +27,18 @@ function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat }) {
               <MessageSquare size={16} />
               <span className="history-text">{chat.title}</span>
             </div>
-            <button
-              className="delete-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onDeleteChat(chat.id);
-              }}
-              aria-label="Delete chat"
-            >
-              <Trash2 size={14} />
-            </button>
+            {!isShared && (
+              <button
+                className="delete-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteChat(chat.id);
+                }}
+                aria-label="Delete chat"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
           </div>
         ))}
       </div>

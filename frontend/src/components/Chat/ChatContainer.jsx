@@ -5,7 +5,7 @@ import { useChat } from '../../context/ChatContext';
 import './Chat.css';
 
 const ChatContainer = () => {
-  const { getCurrentMessages, createNewChat, sendMessage, loading } = useChat();
+  const { getCurrentMessages, createNewChat, sendMessage, loading, isShared } = useChat();
 
   const currentMessages = getCurrentMessages();
 
@@ -32,7 +32,19 @@ const ChatContainer = () => {
         messages={currentMessages}
         onSendMessage={handleSendMessage}
         onNewChat={handleNewChat}
+        disabled={isShared}
       />
+      {isShared && (
+        <div style={{
+          textAlign: 'center',
+          padding: '8px',
+          backgroundColor: '#2f2f2f',
+          color: '#ababad',
+          fontSize: '12px'
+        }}>
+          This is a shared read-only chat
+        </div>
+      )}
     </div>
   );
 };
