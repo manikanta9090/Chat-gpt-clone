@@ -9,6 +9,11 @@ const chatSchema = new mongoose.Schema({
         role: String,
         text: String,
     }],
+    shareId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
     createdAt: {
         type: Date,
         default: Date.now,

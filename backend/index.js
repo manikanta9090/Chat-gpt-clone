@@ -4,6 +4,8 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const chatRoutes = require("./routes/chatRoutes");
+const shareRoutes = require("./routes/shareRoutes");
+const { sendMessage: getAIResponse } = require("./controllers/geminiService");
 
 const app = express();
 
@@ -22,8 +24,9 @@ app.use(express.json());
 
 // API routes
 app.use("/api/chats", chatRoutes);
+app.use("/api", shareRoutes);
 
-// Gemini AI chat endpoint
+// Gemini chat endpoint
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
@@ -32,28 +35,20 @@ app.post("/chat", async (req, res) => {
       return res.status(400).json({ error: "Message is required" });
     }
 
-    const { GoogleGenAI } = require("@google/genai");
-    const ai = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
-    });
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: message,
-    });
-
-    res.json({ reply: response.text });
+    const reply = await getAIResponse(message);
+    res.json({ reply });
   } catch (error) {
     console.error("ERROR:", error.message);
-    res.status(500).json({ error: "Error generating response" });
+    // Fallback response for quota errors or API failures
+    res.json({ reply: "⚠️ AI unavailable, try later" });
   }
 });
 
 // Health check
 app.get("/health", (req, res) => {
-  res.json({ 
-    status: "ok", 
-    mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected" 
+  res.json({
+    status: "ok",
+    mongodb: mongoose.connection.readyState === 1 ? "connected" : "disconnected"
   });
 });
 
