@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { User, Settings, LogOut, ChevronDown } from "lucide-react";
 
 function UserProfile() {
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -25,7 +27,7 @@ function UserProfile() {
 
       {open && (
         <div className="dropdown">
-          <button className="dropdown-item">
+          <button className="dropdown-item" onClick={() => { navigate('/profile'); setOpen(false); }}>
             <User size={16} />
             <span>Profile</span>
           </button>
