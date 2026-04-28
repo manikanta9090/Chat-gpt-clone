@@ -3,6 +3,7 @@ import Sidebar from "./components/Sidebar/Sidebar";
 import ChatContainer from "./components/Chat/ChatContainer";
 import TopBar from "./components/TopBar/TopBar";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import { ChatProvider } from "./context/ChatContext";
 
 function App() {
@@ -17,6 +18,7 @@ function App() {
               <Route path="/" element={<ChatContainer />} />
               <Route path="/chat/:shareId" element={<ChatContainer />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>
         </div>

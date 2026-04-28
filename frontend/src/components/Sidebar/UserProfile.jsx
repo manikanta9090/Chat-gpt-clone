@@ -31,7 +31,7 @@ function UserProfile() {
             <User size={16} />
             <span>Profile</span>
           </button>
-          <button className="dropdown-item">
+          <button className="dropdown-item" onClick={() => { navigate('/settings'); setOpen(false); }}>
             <Settings size={16} />
             <span>Settings</span>
           </button>
