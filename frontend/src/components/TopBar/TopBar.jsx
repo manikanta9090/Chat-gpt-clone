@@ -1,5 +1,6 @@
 import { useChat } from "../../context/ChatContext";
-import { Share2 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { Share2, LogOut } from "lucide-react";
 
 const TopBar = () => {
   const { currentChatId } = useChat();
