@@ -4,6 +4,7 @@ import { Share2, LogOut } from "lucide-react";
 
 const TopBar = () => {
   const { currentChatId } = useChat();
+  const { logout } = useAuth();
 
   const handleShare = async () => {
     if (!currentChatId) {
@@ -43,7 +44,8 @@ const TopBar = () => {
       borderBottom: '1px solid #2f2f2f',
       display: 'flex',
       justifyContent: 'flex-end',
-      alignItems: 'center'
+      alignItems: 'center',
+      gap: '12px'
     }}>
       <button
         onClick={handleShare}
@@ -65,6 +67,27 @@ const TopBar = () => {
       >
         <Share2 size={16} />
         Share chat
+      </button>
+      <button
+        onClick={logout}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          padding: '8px 16px',
+          backgroundColor: 'transparent',
+          border: '1px solid #565869',
+          borderRadius: '8px',
+          color: '#ececf1',
+          fontSize: '14px',
+          cursor: 'pointer',
+          transition: 'background-color 0.15s ease',
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2f'}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+      >
+        <LogOut size={16} />
+        Logout
       </button>
     </div>
   );
