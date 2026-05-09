@@ -9,9 +9,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { ChatProvider } from "./context/ChatContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
-const MainApp = () => {
+const MainApp = ({ user }) => {
   return (
-    <Router>
+    <Router key={user?.uid}>
       <ChatProvider>
         <div style={{ display: "flex", height: "100vh" }}>
           <Sidebar />
@@ -49,7 +49,7 @@ const AppContent = () => {
     return <Auth />;
   }
 
-  return <MainApp />;
+  return <MainApp user={user} />;
 };
 
 export default App;
