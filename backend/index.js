@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const morgan = require("morgan");
 const chatRoutes = require("./routes/chatRoutes");
 const shareRoutes = require("./routes/shareRoutes");
 const { sendMessage: getAIResponse } = require("./controllers/geminiService");
@@ -21,6 +22,7 @@ mongoose.connect(MONGODB_URI)
 
 app.use(cors());
 app.use(express.json());
+app.use(morgan(':method :url :status'));
 
 // API routes
 app.use("/api/chats", chatRoutes);

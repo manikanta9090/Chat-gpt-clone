@@ -6,7 +6,6 @@ import './Chat.css';
 
 const ChatContainer = () => {
   const { getCurrentMessages, createNewChat, sendMessage, loading, isShared } = useChat();
-
   const currentMessages = getCurrentMessages();
 
   const handleNewChat = useCallback(() => {

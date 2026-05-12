@@ -27,7 +27,22 @@ function UserProfile() {
   return (
     <div className="user-profile" ref={dropdownRef}>
       <button className="user-btn" onClick={() => setOpen(!open)}>
-        <div className="avatar">{getInitials(user?.displayName || user?.email)}</div>
+        <div className="avatar">
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="Profile"
+              style={{
+                width: '100%',
+                height: '100%',
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+            />
+          ) : (
+            getInitials(user?.displayName || user?.email)
+          )}
+        </div>
         <span className="user-name">{user?.displayName || user?.email || 'User'}</span>
         <ChevronDown size={16} className={`chevron ${open ? "open" : ""}`} />
       </button>
