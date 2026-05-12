@@ -5,7 +5,7 @@ import { Share2, LogOut } from "lucide-react";
 
 const TopBar = () => {
   const { currentChatId } = useChat();
-  const { user, logout } = useAuth();
+  const { user, logOut } = useAuth();
   const navigate = useNavigate();
 
   const handleShare = async () => {

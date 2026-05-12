@@ -15,14 +15,16 @@ const MainApp = ({ user }) => {
       <ChatProvider>
         <div style={{ display: "flex", height: "100vh" }}>
           <Sidebar />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             <TopBar />
-            <Routes>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <Routes>
               <Route path="/" element={<ProtectedRoute><ChatContainer /></ProtectedRoute>} />
               <Route path="/chat/:shareId" element={<ChatContainer />} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            </Routes>
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              </Routes>
+            </div>
           </div>
         </div>
       </ChatProvider>
