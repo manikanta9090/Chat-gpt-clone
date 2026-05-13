@@ -58,3 +58,26 @@ This project was developed to strengthen my full-stack development fundamentals 
 ---
 
 ## 📂 Project Structure
+
+
+---
+
+## ⚙ Environment Variables
+
+### Frontend `.env`
+
+```env
+REACT_APP_API_URL=
+REACT_APP_FIREBASE_API_KEY=
+REACT_APP_FIREBASE_AUTH_DOMAIN=
+REACT_APP_FIREBASE_PROJECT_ID=
+REACT_APP_FIREBASE_STORAGE_BUCKET=
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
+REACT_APP_FIREBASE_APP_ID=
+
+### Backend `.env`
+MONGODB_URI=
+GEMINI_API_KEY=
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+PORT=5000
