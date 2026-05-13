@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Share2, Check } from "lucide-react";
 import { useState } from 'react';
+import { API_ENDPOINTS } from '../../lib/api';
 
 const TopBar = () => {
   const { currentChatId } = useChat();
@@ -17,7 +18,7 @@ const TopBar = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/get-share-link/${currentChatId}`, {
+      const response = await fetch(API_ENDPOINTS.SHARE_LINK(currentChatId), {
         method: 'GET',
       });
 

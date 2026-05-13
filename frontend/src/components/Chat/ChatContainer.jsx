@@ -17,6 +17,10 @@ const ChatContainer = () => {
     setIsTyping(true);
     try {
       await sendMessage(inputText);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      // Show user-friendly error message
+      alert('Unable to connect to the chat service. Please check your internet connection and try again.');
     } finally {
       setIsTyping(false);
     }

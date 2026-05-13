@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import { API_ENDPOINTS } from '../lib/api';
 
 const ChatContext = createContext(null);
 
@@ -17,7 +18,7 @@ export function ChatProvider({ children }) {
       setLoading(true);
       setIsShared(false);
       setSharedChat(null);
-      const response = await fetch('http://localhost:5000/api/chats');
+      const response = await fetch(API_ENDPOINTS.CHATS);
       if (response.ok) {
         const data = await response.json();
         setChats(data);
@@ -37,7 +38,7 @@ export function ChatProvider({ children }) {
   const fetchSharedChat = useCallback(async (id) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:5000/api/share/${id}`);
+      const response = await fetch(API_ENDPOINTS.SHARED_CHAT(id));
       if (response.ok) {
         const data = await response.json();
         const chatWithId = { ...data, id: data._id };
@@ -68,7 +69,7 @@ export function ChatProvider({ children }) {
   const createNewChat = useCallback(async () => {
     if (isShared) return;
     try {
-      const response = await fetch('http://localhost:5000/api/chats', {
+      const response = await fetch(API_ENDPOINTS.CHATS, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title: `Chat ${chats.length + 1}` }),
@@ -92,7 +93,7 @@ export function ChatProvider({ children }) {
   const deleteChat = useCallback(async (chatId) => {
     if (isShared) return;
     try {
-      const response = await fetch(`http://localhost:5000/api/chats/${chatId}`, {
+      const response = await fetch(API_ENDPOINTS.CHAT(chatId), {
         method: 'DELETE',
       });
 
@@ -141,7 +142,7 @@ export function ChatProvider({ children }) {
       const currentChat = chats.find(chat => chat.id === currentChatId);
       const conversationMessages = currentChat ? [...currentChat.messages, userMessage] : [userMessage];
 
-      const response = await fetch('http://localhost:5000/chat', {
+      const response = await fetch(API_ENDPOINTS.CHAT_COMPLETION, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -157,7 +158,7 @@ export function ChatProvider({ children }) {
 
       // Save user message to DB
       try {
-        await fetch(`http://localhost:5000/api/chats/${currentChatId}/message`, {
+        await fetch(API_ENDPOINTS.CHAT_MESSAGE(currentChatId), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: userMessage }),
@@ -168,7 +169,7 @@ export function ChatProvider({ children }) {
 
       // Save AI message to DB
       try {
-        await fetch(`http://localhost:5000/api/chats/${currentChatId}/message`, {
+        await fetch(API_ENDPOINTS.CHAT_MESSAGE(currentChatId), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: aiMessage }),
@@ -180,7 +181,7 @@ export function ChatProvider({ children }) {
       // Update title if this is the first message
       if (currentChat && currentChat.messages.length === 0) {
         try {
-          await fetch(`http://localhost:5000/api/chats/${currentChatId}/title`, {
+          await fetch(API_ENDPOINTS.CHAT_TITLE(currentChatId), {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: inputText.slice(0, 30) }),
