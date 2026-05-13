@@ -67,7 +67,7 @@ const ChatContainer = () => {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-24 left-80 right-0 px-6 pointer-events-none"
+            className="fixed bottom-24 left-0 md:left-80 right-0 px-6 pointer-events-none"
           >
             <div className="max-w-4xl mx-auto">
               <div className="backdrop-blur-xl bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-center">

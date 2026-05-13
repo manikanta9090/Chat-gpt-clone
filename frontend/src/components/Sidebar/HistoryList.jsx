@@ -2,11 +2,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import { MessageSquare, Trash2, Clock } from "lucide-react";
 
-function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat, isShared, loading = false }) {
+function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat, onClose, isShared, loading = false }) {
   const handleKeyDown = (e, chatId) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       onSelectChat(chatId);
+      onClose();
     }
   };
 
@@ -62,7 +63,10 @@ function HistoryList({ chats, currentChatId, onSelectChat, onDeleteChat, isShare
             }`}
             role="button"
             tabIndex={0}
-            onClick={() => onSelectChat(chat.id)}
+            onClick={() => {
+              onSelectChat(chat.id);
+              onClose();
+            }}
             onKeyDown={(e) => handleKeyDown(e, chat.id)}
           >
             <div className="flex items-center gap-3">

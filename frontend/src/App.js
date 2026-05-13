@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import Sidebar from "./components/Sidebar/Sidebar";
 import ChatContainer from "./components/Chat/ChatContainer";
 import TopBar from "./components/TopBar/TopBar";
@@ -11,13 +12,38 @@ import { ChatProvider } from "./context/ChatContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 const MainApp = ({ user }) => {
+  const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth >= 768);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+  const closeSidebar = () => setSidebarOpen(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(true);
+      } else {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <Router key={user?.uid}>
       <ChatProvider>
         <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
-          <Sidebar />
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-0 md:ml-0">
-            <TopBar />
+          <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
+          {/* Overlay for mobile */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
+              onClick={closeSidebar}
+            />
+          )}
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            <TopBar onToggleSidebar={toggleSidebar} />
             <main className="flex-1 overflow-hidden">
               <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
                 <Routes>

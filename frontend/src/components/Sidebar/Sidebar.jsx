@@ -6,7 +6,7 @@ import HistoryList from "./HistoryList";
 import UserProfile from "./UserProfile";
 import { useChat } from "../../context/ChatContext";
 
-function Sidebar() {
+function Sidebar({ isOpen, onClose }) {
   const { chats, currentChatId, createNewChat, selectChat, deleteChat, isShared, loading } = useChat();
 
   const handleNewChat = useCallback(() => {
@@ -30,9 +30,9 @@ function Sidebar() {
   return (
     <motion.div
       initial={{ x: -320 }}
-      animate={{ x: 0 }}
+      animate={{ x: isOpen ? 0 : -320 }}
       transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="w-80 h-screen bg-slate-900/90 backdrop-blur-2xl border-r border-white/10 flex flex-col shadow-2xl fixed md:relative z-50 md:z-auto"
+      className="w-80 h-screen bg-slate-900/90 backdrop-blur-2xl border-r border-white/10 flex flex-col shadow-2xl fixed z-50 md:relative md:translate-x-0"
     >
       {/* Header */}
       <div className="p-6 border-b border-white/10">
@@ -70,6 +70,7 @@ function Sidebar() {
           currentChatId={currentChatId}
           onSelectChat={handleSelectChat}
           onDeleteChat={handleDeleteChat}
+          onClose={onClose}
           isShared={isShared}
           loading={loading}
         />

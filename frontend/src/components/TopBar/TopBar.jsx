@@ -2,11 +2,11 @@ import { motion } from 'framer-motion';
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Share2, Check } from "lucide-react";
+import { Share2, Check, Menu } from "lucide-react";
 import { useState } from 'react';
 import { API_ENDPOINTS } from '../../lib/api';
 
-const TopBar = () => {
+const TopBar = ({ onToggleSidebar }) => {
   const { currentChatId } = useChat();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -43,9 +43,22 @@ const TopBar = () => {
       animate={{ y: 0, opacity: 1 }}
       className="h-16 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-6"
     >
-      {/* Left side - Title */}
-      <div className="flex-1">
-        <h1 className="text-lg font-semibold text-white">AI Assistant</h1>
+      {/* Left side - Hamburger on mobile, Title on desktop */}
+      <div className="flex items-center gap-3">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onToggleSidebar}
+          className="p-2 rounded-xl hover:bg-white/10 transition-all duration-200"
+        >
+          <Menu className="w-5 h-5 text-white" />
+        </motion.button>
+        <h1 className="text-lg font-semibold text-white hidden md:block">AI Assistant</h1>
+      </div>
+
+      {/* Center - Title on mobile */}
+      <div className="flex-1 md:hidden">
+        <h1 className="text-lg font-semibold text-white text-center">AI Assistant</h1>
       </div>
 
       {/* Right side - Actions */}
