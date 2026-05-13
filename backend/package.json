@@ -12,12 +12,13 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
+        "@google/genai": "^0.8.0",
         "cors": "^2.8.6",
         "dotenv": "^17.4.1",
         "express": "^5.2.1",
         "mongoose": "^8.0.0",
-        "@google/genai": "^0.8.0",
-        "uuid": "^9.0.1",
-        "morgan": "^1.10.0"
+        "morgan": "^1.10.0",
+        "openai": "^6.37.0",
+        "uuid": "^9.0.1"
     }
 }
