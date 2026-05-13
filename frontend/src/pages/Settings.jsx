@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { auth } from '../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { ArrowLeft, User, Palette, Monitor, Shield, Mail, CheckCircle, XCircle, Calendar } from 'lucide-react';
 
 const Settings = () => {
   const [user, setUser] = useState(null);
@@ -19,16 +21,20 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-        backgroundColor: '#202123',
-        color: 'white',
-        fontSize: '18px'
-      }}>
-        Loading...
+      <div className="min-h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-8">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 border-4 border-blue-500/30 border-t-blue-500 rounded-full"
+        />
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="ml-4 text-gray-400"
+        >
+          Loading settings...
+        </motion.p>
       </div>
     );
   }
@@ -46,133 +52,140 @@ const Settings = () => {
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100%',
-      backgroundColor: '#202123',
-      padding: '20px'
-    }}>
-      <button
-        onClick={() => navigate('/')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          backgroundColor: 'transparent',
-          border: 'none',
-          color: '#ececf1',
-          fontSize: '16px',
-          cursor: 'pointer',
-          marginBottom: '20px',
-          padding: '8px 0',
-          alignSelf: 'flex-start'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.color = 'white'}
-        onMouseLeave={(e) => e.currentTarget.style.color = '#ececf1'}
-      >
-        ← Back
-      </button>
+    <div className="min-h-full bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-6">
+      <div className="max-w-4xl mx-auto">
+        {/* Back Button */}
+        <motion.button
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.3 }}
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-8 group"
+        >
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="text-lg font-medium">Back to Chat</span>
+        </motion.button>
 
-      <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'flex-start',
-        flex: 1,
-        overflowY: 'auto'
-      }}>
-        <div style={{
-          backgroundColor: '#2f2f2f',
-          borderRadius: '12px',
-          padding: '40px',
-          maxWidth: '600px',
-          width: '100%',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }}>
-          <h1 style={{
-            color: 'white',
-            marginBottom: '24px',
-            fontSize: '28px',
-            fontWeight: '600',
-            textAlign: 'center'
-          }}>
-            Settings
-          </h1>
+        {/* Settings Container */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="space-y-8"
+        >
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-white mb-2">Settings</h1>
+            <p className="text-gray-400">Manage your account and preferences</p>
+          </div>
 
           {/* Account Info Section */}
-          <div style={{ marginBottom: '24px' }}>
-            <h2 style={{
-              color: '#ececf1',
-              marginBottom: '16px',
-              fontSize: '18px',
-              fontWeight: '500'
-            }}>
-              Account Info
-            </h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <strong style={{ color: '#ececf1' }}>Email</strong>
-              <span style={{ color: 'white' }}>{user?.email || 'N/A'}</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <User className="w-5 h-5 text-blue-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">Account Information</h2>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <strong style={{ color: '#ececf1' }}>Provider</strong>
-              <span style={{ color: 'white' }}>{user?.providerData?.[0]?.providerId || 'N/A'}</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ color: '#ececf1' }}>Email Verified</strong>
-              <span style={{ color: 'white' }}>{user?.emailVerified ? 'Yes' : 'No'}</span>
-            </div>
-          </div>
 
-          {/* Divider */}
-          <div style={{
-            height: '1px',
-            backgroundColor: '#565869',
-            margin: '24px 0'
-          }} />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3">
+                  <Mail className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-300">Email Address</span>
+                </div>
+                <span className="text-white font-medium">{user?.email || 'N/A'}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3">
+                  <Shield className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-300">Authentication</span>
+                </div>
+                <span className="text-white font-medium">{user?.providerData?.[0]?.providerId || 'N/A'}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3">
+                  {user?.emailVerified ? (
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                  ) : (
+                    <XCircle className="w-4 h-4 text-red-400" />
+                  )}
+                  <span className="text-gray-300">Email Verified</span>
+                </div>
+                <span className={`font-medium ${user?.emailVerified ? 'text-green-400' : 'text-red-400'}`}>
+                  {user?.emailVerified ? 'Verified' : 'Unverified'}
+                </span>
+              </div>
+            </div>
+          </motion.div>
 
           {/* Preferences Section */}
-          <div style={{ marginBottom: '24px' }}>
-            <h2 style={{
-              color: '#ececf1',
-              marginBottom: '16px',
-              fontSize: '18px',
-              fontWeight: '500'
-            }}>
-              Preferences
-            </h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <strong style={{ color: '#ececf1' }}>Theme</strong>
-              <span style={{ color: 'white' }}>Dark</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-purple-500/20 rounded-lg">
+                <Palette className="w-5 h-5 text-purple-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">Preferences</h2>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ color: '#ececf1' }}>Language</strong>
-              <span style={{ color: 'white' }}>English</span>
-            </div>
-          </div>
 
-          {/* Divider */}
-          <div style={{
-            height: '1px',
-            backgroundColor: '#565869',
-            margin: '24px 0'
-          }} />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3">
+                  <Monitor className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-300">Theme</span>
+                </div>
+                <span className="text-white font-medium">Dark Mode</span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400">🌐</span>
+                  <span className="text-gray-300">Language</span>
+                </div>
+                <span className="text-white font-medium">English</span>
+              </div>
+            </div>
+          </motion.div>
 
           {/* System Info Section */}
-          <div>
-            <h2 style={{
-              color: '#ececf1',
-              marginBottom: '16px',
-              fontSize: '18px',
-              fontWeight: '500'
-            }}>
-              System Info
-            </h2>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <strong style={{ color: '#ececf1' }}>Account Created</strong>
-              <span style={{ color: 'white' }}>{formatDate(user?.metadata?.creationTime)}</span>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <Monitor className="w-5 h-5 text-green-400" />
+              </div>
+              <h2 className="text-xl font-semibold text-white">System Information</h2>
             </div>
-          </div>
-        </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/10">
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-300">Account Created</span>
+                </div>
+                <span className="text-white font-medium text-sm">
+                  {formatDate(user?.metadata?.creationTime)}
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
       </div>
     </div>
   );

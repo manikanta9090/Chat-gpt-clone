@@ -31,13 +31,25 @@ app.use("/api", shareRoutes);
 // Gemini chat endpoint
 app.post("/chat", async (req, res) => {
   try {
-    const { message } = req.body;
+    const { message, messages } = req.body;
 
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
+    // Support both old format (single message) and new format (full conversation)
+    if (!message && !messages) {
+      return res.status(400).json({ error: "Message or messages array is required" });
     }
 
-    const reply = await getAIResponse(message);
+    let reply;
+    if (messages && Array.isArray(messages)) {
+      // New format: full conversation context
+      const currentMessage = messages[messages.length - 1]?.text;
+      const conversationHistory = messages.slice(0, -1); // All messages except the last one
+
+      reply = await getAIResponse(currentMessage, conversationHistory);
+    } else {
+      // Old format: single message (for backward compatibility)
+      reply = await getAIResponse(message);
+    }
+
     res.json({ reply });
   } catch (error) {
     console.error("ERROR:", error.message);

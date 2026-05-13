@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import Sidebar from "./components/Sidebar/Sidebar";
 import ChatContainer from "./components/Chat/ChatContainer";
 import TopBar from "./components/TopBar/TopBar";
@@ -13,18 +14,20 @@ const MainApp = ({ user }) => {
   return (
     <Router key={user?.uid}>
       <ChatProvider>
-        <div style={{ display: "flex", height: "100vh" }}>
+        <div className="flex h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
           <Sidebar />
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden ml-0 md:ml-0">
             <TopBar />
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              <Routes>
-              <Route path="/" element={<ProtectedRoute><ChatContainer /></ProtectedRoute>} />
-              <Route path="/chat/:shareId" element={<ChatContainer />} />
-                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-                <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-              </Routes>
-            </div>
+            <main className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
+                <Routes>
+                  <Route path="/" element={<ProtectedRoute><ChatContainer /></ProtectedRoute>} />
+                  <Route path="/chat/:shareId" element={<ChatContainer />} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+                </Routes>
+              </div>
+            </main>
           </div>
         </div>
       </ChatProvider>
@@ -44,7 +47,38 @@ const AppContent = () => {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl text-center"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-12 h-12 mx-auto mb-6 border-4 border-blue-500/30 border-t-blue-500 rounded-full"
+          />
+          <motion.h2
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-xl font-semibold text-white mb-2"
+          >
+            Loading your workspace
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="text-gray-400"
+          >
+            Please wait while we set things up...
+          </motion.p>
+        </motion.div>
+      </div>
+    );
   }
 
   if (!user) {

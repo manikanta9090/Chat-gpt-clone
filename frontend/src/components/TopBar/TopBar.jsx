@@ -1,16 +1,18 @@
+import { motion } from 'framer-motion';
 import { useChat } from "../../context/ChatContext";
 import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Share2, LogOut } from "lucide-react";
+import { Share2, Check } from "lucide-react";
+import { useState } from 'react';
 
 const TopBar = () => {
   const { currentChatId } = useChat();
-  const { user, logOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [shareCopied, setShareCopied] = useState(false);
 
   const handleShare = async () => {
     if (!currentChatId) {
-      alert("No chat selected to share");
       return;
     }
 
@@ -27,91 +29,67 @@ const TopBar = () => {
       const shareUrl = `${window.location.origin}/chat/${data.shareId}`;
 
       await navigator.clipboard.writeText(shareUrl);
-      alert("Link copied!");
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
     } catch (error) {
       console.error('Error sharing chat:', error);
-      alert('Failed to copy link');
     }
   };
 
   return (
-    <div style={{
-      padding: '12px 24px',
-      backgroundColor: '#202123',
-      borderBottom: '1px solid #2f2f2f',
-      display: 'flex',
-      justifyContent: 'flex-end',
-      alignItems: 'center',
-      gap: '12px'
-    }}>
-      {currentChatId && (
-        <button
-          onClick={handleShare}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 16px',
-            backgroundColor: 'transparent',
-            border: '1px solid #565869',
-            borderRadius: '8px',
-            color: '#ececf1',
-            fontSize: '14px',
-            cursor: 'pointer',
-            transition: 'background-color 0.15s ease',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2f'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-        >
-          <Share2 size={16} />
-          Share chat
-        </button>
-      )}
-      <button
-        onClick={() => navigate('/profile')}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '8px',
-          padding: '4px',
-          backgroundColor: 'transparent',
-          border: 'none',
-          borderRadius: '50%',
-          cursor: 'pointer',
-          transition: 'background-color 0.15s ease',
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#2a2a2f'}
-        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-      >
-        {user?.photoURL ? (
-          <img
-            src={user.photoURL}
-            alt="Profile"
-            style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              objectFit: 'cover'
-            }}
-          />
-        ) : (
-          <div style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            backgroundColor: '#565869',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: '#ececf1',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}>
-            {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
-          </div>
+    <motion.div
+      initial={{ y: -50, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      className="h-16 bg-slate-900/90 backdrop-blur-xl border-b border-white/10 flex items-center justify-between px-6"
+    >
+      {/* Left side - Title */}
+      <div className="flex-1">
+        <h1 className="text-lg font-semibold text-white">AI Assistant</h1>
+      </div>
+
+      {/* Right side - Actions */}
+      <div className="flex items-center gap-3">
+        {currentChatId && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleShare}
+            className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-gray-300 hover:text-white transition-all duration-200 text-sm font-medium"
+          >
+            {shareCopied ? (
+              <>
+                <Check size={16} className="text-green-400" />
+                Copied!
+              </>
+            ) : (
+              <>
+                <Share2 size={16} />
+                Share Chat
+              </>
+            )}
+          </motion.button>
         )}
-      </button>
-    </div>
+
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/profile')}
+          className="p-2 rounded-xl hover:bg-white/10 transition-all duration-200 group"
+        >
+          {user?.photoURL ? (
+            <img
+              src={user.photoURL}
+              alt="Profile"
+              className="w-8 h-8 rounded-full object-cover ring-2 ring-white/20 group-hover:ring-white/40 transition-all"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm ring-2 ring-white/20 group-hover:ring-white/40 transition-all">
+              {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+            </div>
+          )}
+        </motion.button>
+      </div>
+    </motion.div>
   );
 };
 

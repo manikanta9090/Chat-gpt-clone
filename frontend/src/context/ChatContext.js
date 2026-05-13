@@ -137,10 +137,17 @@ export function ChatProvider({ children }) {
     );
 
     try {
+      // Get full conversation history for context
+      const currentChat = chats.find(chat => chat.id === currentChatId);
+      const conversationMessages = currentChat ? [...currentChat.messages, userMessage] : [userMessage];
+
       const response = await fetch('http://localhost:5000/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage.text }),
+        body: JSON.stringify({
+          messages: conversationMessages,
+          message: userMessage.text // Keep for backward compatibility
+        }),
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -171,7 +178,6 @@ export function ChatProvider({ children }) {
       }
 
       // Update title if this is the first message
-      const currentChat = chats.find(chat => chat.id === currentChatId);
       if (currentChat && currentChat.messages.length === 0) {
         try {
           await fetch(`http://localhost:5000/api/chats/${currentChatId}/title`, {

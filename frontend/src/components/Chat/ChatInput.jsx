@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from "react";
-import { Plus, Mic, Send, Paperclip } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Mic, Send, Paperclip, StopCircle } from "lucide-react";
 
-const ChatInput = ({ onSendMessage, onNewChat, disabled = false }) => {
+const ChatInput = ({ onSendMessage, onNewChat, disabled = false, isTyping = false }) => {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -125,114 +126,182 @@ const ChatInput = ({ onSendMessage, onNewChat, disabled = false }) => {
     }
   };
 
-  // 🎨 Styles
-  const containerStyle = {
-    position: "fixed",
-    bottom: 0,
-    left: "260px",
-    right: 0,
-    padding: "16px",
-    backgroundColor: "#202123",
-    borderTop: "1px solid #2f2f2f",
-    display: "flex",
-    justifyContent: "center",
-    opacity: disabled ? 0.5 : 1,
-    pointerEvents: disabled ? "none" : "auto",
-  };
-
-  const inputWrapperStyle = {
-    maxWidth: "768px",
-    width: "100%",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    backgroundColor: "#40414f",
-    borderRadius: "12px",
-    padding: "10px",
-  };
-
-  const iconButtonStyle = {
-    background: "transparent",
-    border: "none",
-    color: "#ababad",
-    cursor: "pointer",
-    padding: "6px",
-  };
-
-  const textareaStyle = {
-    flex: 1,
-    background: "transparent",
-    border: "none",
-    color: "white",
-    outline: "none",
-    resize: "none",
-  };
-
-  const sendButtonStyle = {
-    backgroundColor: isLoading ? "#565869" : "#10a37f",
-    border: "none",
-    padding: "8px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  };
+  // Focus input when component mounts
+  useEffect(() => {
+    if (textareaRef.current && !disabled) {
+      textareaRef.current.focus();
+    }
+  }, [disabled]);
 
   return (
-    <div style={containerStyle}>
-      <div style={inputWrapperStyle}>
-        {/* Hidden File Input */}
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleFileSelect}
-          style={{ display: "none" }}
-        />
+    <motion.div
+      initial={{ y: 100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="fixed bottom-0 left-0 right-0 md:left-80 p-4 md:p-6 pointer-events-none"
+    >
+      <div className="max-w-4xl mx-auto">
+        {/* Error Message */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm text-center backdrop-blur-sm"
+            >
+              {error}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* ➕ New Chat */}
-        <button onClick={onNewChat} style={iconButtonStyle} disabled={disabled}>
-          <Plus size={20} />
-        </button>
-
-        {/* 📎 Upload */}
-        <button onClick={triggerFileInput} style={iconButtonStyle} disabled={disabled}>
-          <Paperclip size={20} />
-        </button>
-
-        {/* 📝 Input */}
-        <textarea
-          ref={textareaRef}
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          onKeyDown={handleKeyPress}
-          placeholder={disabled ? "Read-only mode" : "Send a message..."}
-          style={textareaStyle}
-          rows={1}
-          disabled={disabled}
-        />
-
-        {/* 🎤 Voice */}
-        <button
-          onClick={toggleVoiceInput}
-          style={{
-            ...iconButtonStyle,
-            color: isListening ? "red" : "#ababad",
-          }}
-          disabled={disabled}
+        {/* Input Container */}
+        <motion.div
+          className={`backdrop-blur-xl bg-slate-800/90 border border-white/10 rounded-2xl shadow-2xl p-4 pointer-events-auto ${
+            disabled ? 'opacity-50' : ''
+          }`}
+          whileHover={!disabled ? { scale: 1.01 } : {}}
+          transition={{ duration: 0.2 }}
         >
-          <Mic size={20} />
-        </button>
+          <div className="flex items-end gap-3">
+            {/* Hidden File Input */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+            />
 
-        {/* ➤ Send */}
-        <button 
-          onClick={handleSend} 
-          style={sendButtonStyle}
-          disabled={disabled || isLoading}
+            {/* New Chat Button */}
+            <motion.button
+              whileHover={!disabled ? { scale: 1.1, rotate: 90 } : {}}
+              whileTap={!disabled ? { scale: 0.9 } : {}}
+              onClick={onNewChat}
+              disabled={disabled}
+              className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
+              title="New Chat"
+            >
+              <Plus size={20} />
+            </motion.button>
+
+            {/* File Upload Button */}
+            <motion.button
+              whileHover={!disabled ? { scale: 1.1 } : {}}
+              whileTap={!disabled ? { scale: 0.9 } : {}}
+              onClick={triggerFileInput}
+              disabled={disabled}
+              className="p-2.5 text-gray-400 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
+              title="Upload File"
+            >
+              <Paperclip size={20} />
+            </motion.button>
+
+            {/* Text Input */}
+            <div className="flex-1 relative">
+              <textarea
+                ref={textareaRef}
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder={disabled ? "Read-only mode" : "Type your message..."}
+                disabled={disabled}
+                rows={1}
+                className="w-full bg-transparent border-0 text-white placeholder-gray-400 outline-none resize-none min-h-[20px] max-h-32 py-1 leading-relaxed"
+              />
+            </div>
+
+            {/* Voice Button */}
+            <motion.button
+              whileHover={!disabled ? { scale: 1.1 } : {}}
+              whileTap={!disabled ? { scale: 0.9 } : {}}
+              onClick={toggleVoiceInput}
+              disabled={disabled}
+              className={`p-2.5 rounded-xl transition-all duration-200 disabled:cursor-not-allowed ${
+                isListening
+                  ? 'text-red-400 hover:text-red-300 hover:bg-red-500/20'
+                  : 'text-gray-400 hover:text-white hover:bg-white/10'
+              }`}
+              title={isListening ? "Stop Recording" : "Voice Input"}
+            >
+              <AnimatePresence mode="wait">
+                {isListening ? (
+                  <motion.div
+                    key="stop"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <StopCircle size={20} />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="mic"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Mic size={20} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+
+            {/* Send Button */}
+            <motion.button
+              whileHover={!disabled && inputText.trim() ? { scale: 1.05 } : {}}
+              whileTap={!disabled && inputText.trim() ? { scale: 0.95 } : {}}
+              onClick={handleSend}
+              disabled={disabled || isLoading || !inputText.trim()}
+              className={`p-2.5 rounded-xl transition-all duration-200 disabled:cursor-not-allowed ${
+                inputText.trim() && !isLoading
+                  ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg'
+                  : 'bg-gray-600 text-gray-400'
+              }`}
+              title="Send Message"
+            >
+              <AnimatePresence mode="wait">
+                {isLoading ? (
+                  <motion.div
+                    key="loading"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                    className="flex items-center justify-center"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="send"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    exit={{ scale: 0 }}
+                  >
+                    <Send size={20} />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </motion.div>
+
+        {/* Footer Text */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-center text-xs text-gray-500 mt-3"
         >
-          {isLoading ? "..." : <Send size={18} />}
-        </button>
+          AI Assistant can make mistakes. Consider checking important information.
+        </motion.p>
       </div>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
-    </div>
+    </motion.div>
   );
 };
 
